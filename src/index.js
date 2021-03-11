@@ -49,7 +49,7 @@ app.post('/users', (request, response) => {
   })
 
   return response.status(201).send()
-});
+})
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request
@@ -58,7 +58,20 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
 })
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { title, deadline } = request.body
+  const { user } = request
+
+  const todo = {
+    id: uuidv4(),
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date()
+  }
+
+  user.todos.push(todo)
+
+  return response.status(201).send()
 })
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
@@ -71,6 +84,6 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   // Complete aqui
-});
+})
 
 module.exports = app;
