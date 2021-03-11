@@ -28,6 +28,14 @@ function checksExistsUserAccount(request, response, next) {
   return next()
 }
 
+function getTodo(user, id){
+  const todo = user.todos.find(
+    (todo) => todo.id === id
+  )
+
+  return todo
+}
+
 app.post('/users', (request, response) => {
   const { name, username } = request.body
 
@@ -75,7 +83,31 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 })
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { title, deadline } = request.body
+  const { id } = request.params
+  const { user } = request
+
+  const todoAlreadyExists = user.todos.some(
+    (todo) => todo.id === id
+  )
+
+  if(!todoAlreadyExists){
+    return response.status(400).json({
+      'error': 'Todo not already exists'
+    })
+  }
+
+  let todo = getTodo(user, id)
+
+  todo = {
+    ...todo,
+    title: title,
+    deadline: new Date(deadline)
+  }
+
+  user.todos = todo
+  
+  return response.status(201).json(todo)
 })
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
