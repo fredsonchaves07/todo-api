@@ -28,14 +28,6 @@ function checksExistsUserAccount(request, response, next) {
   return next()
 }
 
-function getTodo(user, id){
-  const todo = user.todos.find(
-    (todo) => todo.id === id
-  )
-
-  return todo
-}
-
 app.post('/users', (request, response) => {
   const { name, username } = request.body
 
@@ -97,17 +89,17 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
     })
   }
 
-  let todo = getTodo(user, id)
-
-  todo = {
-    ...todo,
-    title: title,
-    deadline: new Date(deadline)
+  for(const key in user.todos){
+    if(user.todos[key].id == id) {
+      user.todos[key] = {
+        ...user.todos[key],
+        title: title,
+        deadline: new Date(deadline)
+      }
+    }
   }
-
-  user.todos = todo
   
-  return response.status(201).json(todo)
+  return response.status(201).send()
 })
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
