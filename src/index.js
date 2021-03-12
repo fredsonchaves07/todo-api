@@ -103,7 +103,26 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
 })
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params
+  const { user } = request
+
+  const todoAlreadyExists = user.todos.some(
+    (todo) => todo.id === id
+  )
+
+  if(!todoAlreadyExists){
+    return response.status(400).json({
+      'error': 'Todo not already exists'
+    })
+  }
+
+  for(const key in user.todos){
+    if(user.todos[key].id == id) {
+      user.todos[key].done = true
+    }
+  }
+
+  return response.status(201).send()
 })
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
