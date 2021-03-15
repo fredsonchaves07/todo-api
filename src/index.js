@@ -18,7 +18,7 @@ function checksExistsUserAccount(request, response, next) {
   )
 
   if(!user){
-    return response.status(400).json({
+    return response.status(404).json({
       'error': 'User not found'
     })
   }
@@ -27,6 +27,7 @@ function checksExistsUserAccount(request, response, next) {
 
   return next()
 }
+
 
 app.post('/users', (request, response) => {
   const { name, username } = request.body
@@ -41,14 +42,16 @@ app.post('/users', (request, response) => {
     })
   }
 
-  users.push({
+  const user = {
     'id': uuidv4(),
     'name': name,
     'username': username,
     'todos': []
-  })
+  }
 
-  return response.status(201).send()
+  users.push(user)
+
+  return response.status(201).json(user)
 })
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
@@ -71,7 +74,7 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 
   user.todos.push(todo)
 
-  return response.status(201).send()
+  return response.status(201).json(todo)
 })
 
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
@@ -84,22 +87,23 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   )
 
   if(!todoAlreadyExists){
-    return response.status(400).json({
+    return response.status(404).json({
       'error': 'Todo not already exists'
     })
   }
 
-  for(const key in user.todos){
-    if(user.todos[key].id == id) {
-      user.todos[key] = {
-        ...user.todos[key],
-        title: title,
-        deadline: new Date(deadline)
-      }
-    }
+  let todo = user.todos.find(todo => todo.id === id)
+  const todoIndex = user.todos.findIndex(todo => todo.id === id)
+
+  todo ={
+    ...todo,
+    title: title,
+    deadline: new Date(deadline)
   }
+
+  user.todos[todoIndex] = todo
   
-  return response.status(201).send()
+  return response.status(201).json(todo)
 })
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
@@ -111,18 +115,22 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
   )
 
   if(!todoAlreadyExists){
-    return response.status(400).json({
+    return response.status(404).json({
       'error': 'Todo not already exists'
     })
   }
 
-  for(const key in user.todos){
-    if(user.todos[key].id == id) {
-      user.todos[key].done = true
-    }
+  let todo = user.todos.find(todo => todo.id === id)
+  const todoIndex = user.todos.findIndex(todo => todo.id === id)
+
+  todo ={
+    ...todo,
+    'done': true
   }
 
-  return response.status(201).send()
+  user.todos[todoIndex] = todo
+
+  return response.status(201).json(todo)
 })
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
@@ -134,7 +142,7 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
   )
 
   if(!todoAlreadyExists){
-    return response.status(400).json({
+    return response.status(404).json({
       'error': 'Todo not already exists'
     })
   }
@@ -143,7 +151,7 @@ app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
 
   user.todos.splice(todoIndex, 1)
 
-  return response.status(200).json(user.todos)
+  return response.status(204).send()
 })
 
 module.exports = app;
