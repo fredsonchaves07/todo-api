@@ -126,7 +126,24 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
 })
 
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params
+  const { user } = request
+
+  const todoAlreadyExists = user.todos.some(
+    (todo) => todo.id === id
+  )
+
+  if(!todoAlreadyExists){
+    return response.status(400).json({
+      'error': 'Todo not already exists'
+    })
+  }
+
+  const todoIndex = user.todos.findIndex(todo => todo.id === id)
+
+  user.todos.splice(todoIndex, 1)
+
+  return response.status(200).json(user.todos)
 })
 
 module.exports = app;
